@@ -1,5 +1,10 @@
 # dsh-teaching-mode
 
+[![npm version](https://img.shields.io/npm/v/dsh-teaching-mode.svg)](https://www.npmjs.com/package/dsh-teaching-mode)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![tests](https://img.shields.io/badge/tests-224%20passing-brightgreen.svg)](#development)
+[![DeepSeek Harness](https://img.shields.io/badge/DeepSeek%20Harness-plugin-4B6BFB.svg)](https://github.com/deepseek-ai/deepseek-harness)
+
 > A switchable **teaching mode** for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness): one mini-topic at a time → quiz right after → topic wrap-up quiz → section review sheet.
 
 - **Off by default** — it never interferes with ordinary conversations.

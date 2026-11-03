@@ -1,5 +1,10 @@
 # dsh-teaching-mode · 教师模式
 
+[![npm version](https://img.shields.io/npm/v/dsh-teaching-mode.svg)](https://www.npmjs.com/package/dsh-teaching-mode)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![tests](https://img.shields.io/badge/tests-224%20passing-brightgreen.svg)](#开发)
+[![DeepSeek Harness](https://img.shields.io/badge/DeepSeek%20Harness-plugin-4B6BFB.svg)](https://github.com/deepseek-ai/deepseek-harness)
+
 > 给 DeepSeek Harness 装一个"会按老师方式教"的开关：**一次一个小知识点 → 讲完立刻出题 → 知识点收口补题 → 小节出复习资料**。
 
 - 装完默认**关闭**，不影响你平时的对话

@@ -8,6 +8,11 @@
 
 - 首次发布到 npm：[`dsh-teaching-mode@0.9.3`](https://www.npmjs.com/package/dsh-teaching-mode)。安装方式：`npm install dsh-teaching-mode`，或在 DSH 应用内用 `plugin_manager` → `install_bundle`（target 传包名 `dsh-teaching-mode`）。
 
+### 文档与元数据
+
+- README（中英）顶部加状态徽章：npm 版本 / MIT 许可 / 224 条测试全绿 / DSH 插件标识。
+- 新增 `.github/ISSUE_TEMPLATE/`（bug 报告 + 功能建议），表单要求填 DSH 版本、插件版本、安装方式与复现步骤。
+
 ### 修复
 
 - **跨会话接力断裂**：一门课换到新会话后进度对不上、模型只能翻 README 手工接续。修法：课题名归一化（`初中英语（牛津译林版七年级下册）` 与 `初中英语（牛津译林版七年级）` 算同一门课）、`teaching_setup` 在目录不存在时自动沿用 `projects/` 下同名课目录、课程键改为"真实目录优先 + 归一化课题兜底"的宽松匹配。

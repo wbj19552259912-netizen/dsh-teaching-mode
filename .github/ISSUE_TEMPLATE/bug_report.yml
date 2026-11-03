@@ -1,0 +1,69 @@
+name: Bug 报告
+description: 报告一个可复现的问题（讲错、命令失灵、状态没落账等）
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。请尽量填全——尤其是 **DSH 版本** 与 **复现步骤**，这两项缺了基本无法定位。
+
+        提示：插件日志在 `C:\Users\<你的用户名>\.dsh\teaching-mode\dsh-teaching-mode.log`。
+
+  - type: input
+    id: dsh-version
+    attributes:
+      label: DSH 版本
+      description: 设置页显示的版本，或 `dsh --version`
+      placeholder: "0.2.1-rc.5"
+    validations:
+      required: true
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: 插件版本
+      placeholder: "0.9.3"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install
+    attributes:
+      label: 安装方式
+      options:
+        - npm（plugin_manager install_bundle 传包名）
+        - 本地源码（file: 路径 / Junction）
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 发生了什么
+      description: 简要说明现象，以及你期望的结果
+      placeholder: |
+        现象：
+        期望：
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 能按顺序重放的步骤（含你敲的命令或说的话）
+      placeholder: |
+        1. /teaching setup Python ...
+        2. 让它讲「列表推导式」
+        3. 出题后我选了 B ...
+        4. 结果 ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 相关日志（可选）
+      description: 粘贴插件日志里报错那几行，或 /teaching status 的输出
+      render: text

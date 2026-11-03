@@ -1,0 +1,42 @@
+name: 功能建议
+description: 提议一个新的能力或对现有教学流程的改进
+title: "[feat] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        欢迎提建议。说明「你想解决什么问题」比「你想要什么功能」更有用。
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 你想解决什么问题
+      description: 现在的教学流程里，哪一步让你觉得别扭、低效或不可靠？
+      placeholder: "例：新会话里 AI 不主动调用 teaching_update，进度要手工补。"
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 你设想的做法（可选）
+      validations:
+        required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: 涉及的部分
+      multiple: true
+      options:
+        - 教学规程（一次讲多少、怎么出题）
+        - 进度与欠账记录
+        - 错题本
+        - 讲义 / 复习资料落盘
+        - 跨会话接力
+        - 命令（/teaching ...）
+        - 面板与设置页
+        - 其他
+    validations:
+      required: true
