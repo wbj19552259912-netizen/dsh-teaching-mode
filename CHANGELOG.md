@@ -6,13 +6,17 @@
 
 ### 修复
 
-- **新手引导从"看不见"改成"看得见"**：0.9.4 把欢迎塞进 system prompt，只有模型能看到；真机验证时用户在新对话里一个字都没看到（`state.json` 里 `welcomeSeen` 已经置位，证明注入确实发生了，只是界面不显示）。现在改由客户端承担——右下角浮出一张卡片（挂在 root 浮层 `shell.overlay` 上，任何页面都能出现，包括刚打开还没发消息的空白会话；最初挂 `conversation.input.dock`，真机验证该 region 在空白会话里不渲染），写明"默认是关的 / 怎么开课 / 怎么收工 / `/teaching status` 看状态 / 之前上过的课会自动接上"，点「知道了」或 × 关闭，用 `localStorage` 记住只出现一次。
-- Host 侧不再注入欢迎文案，避免界面卡片与模型复述重复。`WELCOME_HINT` 与 `welcomeFor` 一并移除。
-- 客户端文案里"现在是关着的"改成"默认是关着的"，这样在已开课的会话里显示也不会说错。
+- **出题门禁同时校验讲解段**：从「只看字数」改成「字数 + 内容」，正文里必须同时出现「是什么」和「为什么」的讲解段（或一段代码），只写批改不算讲；拦截文案区分「字数不足」和「没有讲解段」。真机事故：讲第 8 章第二节微点 4 时跳过讲解直接出题。
+- **规程补两条**：批改不算讲授（批改完要进下一个知识点必须重讲）、每个知识点要报编号。
+- **新手教程改走对话**：客户端半（面板 / 设置页 / 引导卡片）在这台机器上无法加载——`dsh.client` 存在即让 web boot 卡在 `loading` 并崩，三次尝试（三包 inject / 单包 inject / 只留 `platform`）全部失败。现在 `dsh.client` 段已从 `package.json` 移除，客户端半不参与加载；「装好没反应」改由 Host 侧解决：每个会话第一次注入时，在注入最末尾塞一条硬指令，要求模型原话输出三句用法提示（开课 / 收工 / 查状态）。
 
 ### 测试
 
-- `tests/test.mjs` 157、`tests/client-test.mjs` 28、`tests/default-on-test.mjs` 16、`tests/rules-check.mjs` 32，共 233 条。新增：Host 注入不再塞欢迎、客户端注册 3 个 slot、引导条首次渲染出可见内容、引导条是 fixed 浮层。
+- `tests/test.mjs` 159、`tests/client-test.mjs` 28、`tests/default-on-test.mjs` 16、`tests/rules-check.mjs` 32，共 **235** 条。新增：Host 注入含「原话输出三句」硬指令、同一会话不重复、换会话各一次。
+
+### 已知限制
+
+- 面板页签与设置页在本机不可用（客户端半不加载）。全部能力在命令（`/teaching on|off|status|setup|courses|link|repair|prune`）与 6 个工具上。
 
 ## [0.9.4] — 2026-11-03
 

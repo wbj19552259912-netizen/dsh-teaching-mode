@@ -782,10 +782,15 @@ check('[并账] 换叫法（分数运算 / 分数运算（下册））仍是同�
 const syncedHint = firstRun.basket.sections[0].text({ scope: { id: 'hint-fresh' } });
 const chemLine = (syncedHint.match(/- 「化学」.*/) || [''])[0];
 check('[接力] 全已销的课在接力线索里不算"欠账未销"', !!chemLine && !chemLine.includes('欠账未销'), chemLine || '（线索里没有化学）');
-// 新手引导（v0.9.5）：欢迎改由客户端引导条承担，Host 注入里不再出现，避免界面卡片与模型复述重复
+// 新手教程（v0.9.5）：Host 侧硬指令，每个会话只出一次
 const welcomeFirst = firstRun.basket.sections[0].text({ scope: { id: 'welcome-fresh' } });
-check('[新手引导] Host 注入不再塞欢迎（改由客户端引导条）',
-  !welcomeFirst.includes('教师模式已装好'), welcomeFirst.slice(0, 40));
+const welcomeAgain = firstRun.basket.sections[0].text({ scope: { id: 'welcome-fresh' } });
+const welcomeOther = firstRun.basket.sections[0].text({ scope: { id: 'welcome-other' } });
+check('[新手教程] 首次注入含"原话输出三句"硬指令',
+  welcomeFirst.includes('本轮必做') && welcomeFirst.includes('想上课就说「开启教师模式」'),
+  welcomeFirst.slice(-90));
+check('[新手教程] 同一会话第二次不再出现', !welcomeAgain.includes('本轮必做'), '');
+check('[新手教程] 换会话仍各一次', welcomeOther.includes('本轮必做'), '');
 await mkPlugin('sync2');
 const twice = syncRead();
 check('[并账] 第二次启动再同步，欠账条数不变（幂等）',
