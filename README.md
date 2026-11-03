@@ -103,7 +103,7 @@ Filenames follow the student's language on purpose: the course, its folders and 
 
 A course often outlives one conversation. The plugin therefore does not key a course on the session, but on **which course it is**:
 
-- Subject names are normalised first (`初中英语（牛津译林版七年级下册）` and `初中英语（牛津译林版七年级）` are the same course).
+- Subject names are normalised first (`高等数学（同济第七版上册）` and `高等数学（同济第七版）` are the same course).
 - When the notes directory of a new session does not exist, the plugin reuses the existing `projects/<subject>/03-产出` instead of creating an empty one, and says so.
 - Sessions of the same course are merged (progress, sections, debts, mistakes) every time the plugin starts.
 - A session with teaching mode still off sees a short hint listing **the courses already in this workspace** (progress, sections taught, open debts) so it can continue instead of starting from scratch.
