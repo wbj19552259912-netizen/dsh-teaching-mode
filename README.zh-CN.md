@@ -67,9 +67,19 @@
 
 ## 安装
 
+**还没发到 npm**，所以 `dsh plugin add dsh-teaching-mode` 是找不到包的。从源码装：
+
 ```sh
-dsh plugin --profile desktop add dsh-teaching-mode
+git clone https://github.com/wbj19552259912-netizen/dsh-teaching-mode.git
 ```
+
+然后把克隆下来的**目录**当插件装——DSH 的插件安装器接受本地 spec：
+
+```sh
+dsh plugin add file:<克隆目录的绝对路径>
+```
+
+桌面版的命令行**不允许管理 `desktop` profile**（归 App 管），所以要在应用里装：开一个 DSH 会话，把克隆目录的路径给它，让它调 `plugin_manager` → `install_bundle`，target 传 `file:<路径>`。
 
 装完重启 DSH（或让 profile 重新加载）。
 
