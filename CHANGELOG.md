@@ -6,13 +6,13 @@
 
 ### 修复
 
-- **新手引导从"看不见"改成"看得见"**：0.9.4 把欢迎塞进 system prompt，只有模型能看到；真机验证时用户在新对话里一个字都没看到（`state.json` 里 `welcomeSeen` 已经置位，证明注入确实发生了，只是界面不显示）。现在改由客户端承担——输入框上方出现一条引导卡片，写明"默认是关的 / 怎么开课 / 怎么收工 / `/teaching status` 看状态 / 之前上过的课会自动接上"，点「知道了」或 × 关闭，用 `localStorage` 记住只出现一次。
+- **新手引导从"看不见"改成"看得见"**：0.9.4 把欢迎塞进 system prompt，只有模型能看到；真机验证时用户在新对话里一个字都没看到（`state.json` 里 `welcomeSeen` 已经置位，证明注入确实发生了，只是界面不显示）。现在改由客户端承担——右下角浮出一张卡片（挂在 root 浮层 `shell.overlay` 上，任何页面都能出现，包括刚打开还没发消息的空白会话；最初挂 `conversation.input.dock`，真机验证该 region 在空白会话里不渲染），写明"默认是关的 / 怎么开课 / 怎么收工 / `/teaching status` 看状态 / 之前上过的课会自动接上"，点「知道了」或 × 关闭，用 `localStorage` 记住只出现一次。
 - Host 侧不再注入欢迎文案，避免界面卡片与模型复述重复。`WELCOME_HINT` 与 `welcomeFor` 一并移除。
 - 客户端文案里"现在是关着的"改成"默认是关着的"，这样在已开课的会话里显示也不会说错。
 
 ### 测试
 
-- `tests/test.mjs` 157、`tests/client-test.mjs` 27、`tests/default-on-test.mjs` 16、`tests/rules-check.mjs` 32，共 232 条。新增：Host 注入不再塞欢迎、客户端注册 3 个 slot、引导条首次渲染出可见内容。
+- `tests/test.mjs` 157、`tests/client-test.mjs` 28、`tests/default-on-test.mjs` 16、`tests/rules-check.mjs` 32，共 233 条。新增：Host 注入不再塞欢迎、客户端注册 3 个 slot、引导条首次渲染出可见内容、引导条是 fixed 浮层。
 
 ## [0.9.4] — 2026-11-03
 

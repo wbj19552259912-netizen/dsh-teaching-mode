@@ -96,12 +96,15 @@ try {
 check('注册了 3 个 slot（对话页签 + 设置页 + 新手引导条）', regs.length === 3, `实际 ${regs.length}`);
 const reg = regs.find((r) => r.name === 'conversation.view') || {};
 const regSettings = regs.find((r) => r.name === 'settings.section') || {};
-const regDock = regs.find((r) => r.name === 'conversation.input.dock') || {};
+const regDock = regs.find((r) => r.name === 'shell.overlay') || {};
 check('挂着 conversation.view 页签', !!reg.name, String(reg.name));
 check('挂着 settings.section 设置页', !!regSettings.name, String(regSettings.name));
-check('挂着 conversation.input.dock 新手引导条', !!regDock.name, String(regDock.name));
+check('挂着 shell.overlay 新手引导浮层', !!regDock.name, String(regDock.name));
 const dockNode = typeof regDock.component === 'function' ? regDock.component({}) : null;
 check('引导条首次渲染出可见内容', !!dockNode, dockNode ? 'yes' : 'null');
+const dockInner = dockNode && typeof dockNode.type === 'function' ? dockNode.type(dockNode.props) : null;
+const dockStyle = (dockInner && dockInner.props && dockInner.props.style) || {};
+check('引导条是 fixed 浮层（不占文档流，空白会话也可见）', dockStyle.position === 'fixed', String(dockStyle.position || 'none'));
 check('提供了 component', typeof reg.component === 'function');
 check('提供了 label', typeof reg.label === 'function', typeof reg.label === 'function' ? String(reg.label()) : '');
 
