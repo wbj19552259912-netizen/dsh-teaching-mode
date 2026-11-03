@@ -93,11 +93,15 @@ try {
   check('apply 执行无异常', false, e.message);
 }
 
-check('注册了 2 个 slot（对话页签 + 设置页）', regs.length === 2, `实际 ${regs.length}`);
+check('注册了 3 个 slot（对话页签 + 设置页 + 新手引导条）', regs.length === 3, `实际 ${regs.length}`);
 const reg = regs.find((r) => r.name === 'conversation.view') || {};
 const regSettings = regs.find((r) => r.name === 'settings.section') || {};
+const regDock = regs.find((r) => r.name === 'conversation.input.dock') || {};
 check('挂着 conversation.view 页签', !!reg.name, String(reg.name));
 check('挂着 settings.section 设置页', !!regSettings.name, String(regSettings.name));
+check('挂着 conversation.input.dock 新手引导条', !!regDock.name, String(regDock.name));
+const dockNode = typeof regDock.component === 'function' ? regDock.component({}) : null;
+check('引导条首次渲染出可见内容', !!dockNode, dockNode ? 'yes' : 'null');
 check('提供了 component', typeof reg.component === 'function');
 check('提供了 label', typeof reg.label === 'function', typeof reg.label === 'function' ? String(reg.label()) : '');
 
