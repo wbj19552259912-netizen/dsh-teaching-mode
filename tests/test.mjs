@@ -611,6 +611,14 @@ check('门禁：新一轮没讲又出题，再次拒绝', typeof gDeny2 === 'str
 stream('g1', 3, '这是一段足够长的讲课正文');
 const gShort = gate(askExec('g1'));
 check('门禁：正文不足 150 字仍拒绝', typeof gShort === 'string' && gShort.includes('出题被拒绝'), String(gShort).slice(0, 40));
+// v0.9.4：字数够、但只有批改（没有「是什么 + 为什么」、没有代码块）→ 仍算没讲
+const gGradingOnly = '答对了，你选 B 是对的。上一题你错在把筛选区和改写区看反了，这里再确认一次：先看 if 在 for 前面还是后面，前面的要配 else，后面的只做过滤。下一题来了，请判断下面这段代码输出什么。注意看清变量名，别把 m 和 n 混在一起，这类错误在考试里最容易丢分，务必逐字对照。另外提醒你，做完别急着交，先把两栏写在纸上再对号入座，养成习惯后考场上就不会慌，也不会因为粗心白白扣分。';
+stream('g1', 5, gGradingOnly);
+const gDenyGrading = gate(askExec('g1'));
+check('门禁：只写批改、字数够也拒绝', typeof gDenyGrading === 'string' && gDenyGrading.includes('出题被拒绝'), String(gDenyGrading).slice(0, 40));
+stream('g1', 6, gGradingOnly + ' 正规式是什么？它是描述词法单元的模式；为什么这样定义？因为词法分析器本质上是有限自动机。');
+const gAllowGrading = gate(askExec('g1'));
+check('门禁：补上「是什么 + 为什么」后放行', gAllowGrading === undefined, String(gAllowGrading).slice(0, 40));
 stream('g1', 4, gLong, 'reasoning-delta');
 const gThink = gate(askExec('g1'));
 check('门禁：思考过程不算讲解', typeof gThink === 'string', String(gThink).slice(0, 40));
