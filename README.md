@@ -52,19 +52,19 @@ Chapter done    → merged into a chapter-level review
 
 ## Install
 
-The package is **not published on npm yet**, so `dsh plugin add dsh-teaching-mode` will not resolve. Install from source:
+Published on npm: [`dsh-teaching-mode`](https://www.npmjs.com/package/dsh-teaching-mode)
+
+```sh
+npm install dsh-teaching-mode
+```
+
+In the desktop app the CLI is **not allowed to manage the `desktop` profile** (the app owns it), so install from inside the app: open a DSH session and have it run `plugin_manager` → `install_bundle` with target `dsh-teaching-mode` — the package name; DSH resolves it from npm.
+
+From a local checkout instead: clone the repo, then use `install_bundle` with target `file:<absolute-path-to-the-cloned-folder>`.
 
 ```sh
 git clone https://github.com/wbj19552259912-netizen/dsh-teaching-mode.git
 ```
-
-Then install that folder as a plugin — DSH's plugin installer accepts a local spec:
-
-```sh
-dsh plugin add file:<absolute-path-to-the-cloned-folder>
-```
-
-In the desktop app the CLI is **not allowed to manage the `desktop` profile** (the app owns it), so install from inside the app instead: open a DSH session, give it the cloned folder's path, and have it run `plugin_manager` → `install_bundle` with target `file:<path>`.
 
 Restart DSH (or reload the profile) afterwards.
 
