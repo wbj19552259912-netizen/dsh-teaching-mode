@@ -1,0 +1,4 @@
+# 源码统一 LF，Windows 检出也保持一致，避免 diff 噪音
+* text=auto eol=lf
+*.png binary
+*.webp binary

@@ -1,0 +1,65 @@
+{
+  "name": "dsh-teaching-mode",
+  "version": "0.9.3",
+  "type": "module",
+  "description": "DSH 教师模式：一次一个小知识点 + 卡片例题、知识点收口补题、小节出复习资料的可开关教学闭环，带对话区教学面板与设置页开关。/teaching on 开启，off 关闭。Teach-mode plugin for DeepSeek Harness with a conversation-side panel and a settings switch.",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "dsh.plugin.json",
+    "README.md",
+    "README.zh-CN.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "check": "node --check lib/index.js && node --check lib/rules.js && node --check lib/client.js",
+    "test": "node tests/test.mjs && node tests/client-test.mjs && node tests/default-on-test.mjs",
+    "prepublishOnly": "npm run check && npm run test"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-slots",
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-locale"
+      ]
+    }
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "teaching",
+    "tutor",
+    "education",
+    "study"
+  ],
+  "dependencies": {
+    "@deepseek-ai/cosmokit": "~1.8.5",
+    "@deepseek-ai/schemastery": "^3.18.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wbj19552259912-netizen/dsh-teaching-mode.git"
+  },
+  "homepage": "https://github.com/wbj19552259912-netizen/dsh-teaching-mode#readme",
+  "bugs": {
+    "url": "https://github.com/wbj19552259912-netizen/dsh-teaching-mode/issues"
+  },
+  "author": "wbj19552259912-netizen",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  }
+}

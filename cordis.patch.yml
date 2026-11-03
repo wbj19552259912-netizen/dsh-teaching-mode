@@ -1,0 +1,5 @@
+# dsh-teaching-mode 的 bundle patch：把自己插进 profile 的层栈。
+# 所有可调项都在 config: 下（详见 README）；不带 config 时用默认值即可。
+- insert:
+    - id: dsh-teaching-mode
+      name: 'dsh-teaching-mode'

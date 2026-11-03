@@ -1,0 +1,11 @@
+# 依赖
+node_modules/
+# 运行产物
+*.log
+state*.json
+state.backup-*.json
+# 临时
+.tmp/
+coverage/
+.DS_Store
+Thumbs.db
