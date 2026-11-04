@@ -1,6 +1,6 @@
 {
   "id": "dsh-teaching-mode",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "main": "./lib/index.js",
   "description": "教师模式：一次一个小知识点 + 卡片例题、知识点收口补题、小节出复习资料的可开关教学闭环 / Switchable teaching loop: mini-topic + quiz, topic wrap-up, section review sheet",
   "engines": {

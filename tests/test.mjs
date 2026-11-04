@@ -572,12 +572,13 @@ fs.writeFileSync(gFile, JSON.stringify({
   },
 }), 'utf8');
 const gGuards = [];
+const gSections = [];
 const gListeners = new Map();
 const gEmit = (evt, payload) => { for (const fn of (gListeners.get(evt) || [])) { try { fn(payload); } catch { /* 忽略 */ } } };
 const gCtx = {
   logger: { info: () => {}, warn: () => {}, error: () => {} },
   effect: (fn) => { try { fn(); } catch { /* 忽略 */ } return () => {}; },
-  systemPrompt: { section: () => () => {} },
+  systemPrompt: { section: (o) => { gSections.push(o); return () => {}; } },
   inject: (names, cb) => {
     if (names.includes('commands')) cb({ commands: { register: () => () => {} } });
     if (names.includes('tools')) cb({ tools: { register: () => () => {}, guard: (fn) => { gGuards.push(fn); return () => {}; } } });
@@ -639,6 +640,21 @@ const streamBlock = (sid, turn, text) => {
 streamBlock('g1', 6, gLong);
 const gBlock = gate(askExec('g1'));
 check('门禁：只给 block-end 整块文本也算讲了', gBlock === undefined, String(gBlock).slice(0, 40));
+// ── 18b. 纯文本出题的事后纠偏（v0.9.6）──
+// 英语课的单元卷、ABCD 选择题是模型直接写在正文里的，不经过任何工具调用，
+// examGate 拦不住；这里验证「判定 → 记账 → 下一轮强制补讲 → 只纠一次」。
+const gQuizText = '一、单项选择（每题2分）\n1. — Where is your pen? — It is in my bag.\nA. in  B. on  C. under  D. behind\n2. She ___ to school every day.\nA. go  B. goes  C. going  D. gone\n3. — ___ do you go to school? — By bike.\nA. What  B. How  C. When  D. Where\n4. There ___ some milk in the glass.\nA. are  B. is  C. be  D. have\n5. Look! The boys ___ football now.\nA. play  B. plays  C. are playing  D. played\n6. He is good ___ English.\nA. at  B. in  C. on  D. for\n把答案写在下面。';
+stream('g1', 7, gQuizText);
+const gAfterQuiz = JSON.parse(fs.readFileSync(gFile, 'utf8'));
+const gDump = gAfterQuiz.sessions && gAfterQuiz.sessions.g1 && gAfterQuiz.sessions.g1.quizDump;
+check('纠偏：纯文本出题被记账', !!gDump, JSON.stringify(gDump));
+const gSec = gSections[0];
+const gFix1 = gSec.text({ scope: { id: 'g1' } });
+check('纠偏：下一轮开头要求那批题作废重讲', gFix1.includes('上一轮违规') && gFix1.includes('作废'), (gFix1.match(/【教师模式·上一轮违规[^\n]*/) || [''])[0]);
+const gFix2 = gSec.text({ scope: { id: 'g1' } });
+check('纠偏：只纠一次，不重复念', !gFix2.includes('上一轮违规'), '');
+const gAfterFix = JSON.parse(fs.readFileSync(gFile, 'utf8'));
+check('纠偏：注入后状态里的记账已清空', !(gAfterFix.sessions.g1 && gAfterFix.sessions.g1.quizDump), JSON.stringify(gAfterFix.sessions.g1 && gAfterFix.sessions.g1.quizDump));
 try { fs.unlinkSync(gFile); } catch { /* 忽略 */ }
 
 // ── 18. 接力修复（2026-11-03）：归一化课题 + 目录沿用 + 关态线索 + 空壳清理 ──
