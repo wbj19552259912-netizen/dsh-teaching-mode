@@ -111,7 +111,7 @@ const rOn = await run('/teaching on');
 check('on 返回 success', rOn.kind === 'success', rOn.text.split('\n')[0]);
 const injected = injectFor('s1');
 check('开启后注入非空', typeof injected === 'string' && injected.length > 500, `${injected.length} 字符`);
-check('注入含三级粒度约定', injected.includes('小知识点') && injected.includes('卡片例题'));
+check('注入含微点模板约定', injected.includes('微点') && injected.includes('标准回答'));
 check('注入含小节复习资料要求', injected.includes('复习资料'));
 check('注入含"先问，不猜"备课要求', injected.includes('先问，不猜'));
 check('注入含作业题不配检验题', injected.includes('不配检验题'));
@@ -217,7 +217,7 @@ check('识别"用教师模式"变体', stateOfStore()['auto3']?.on === true, JSO
 
 // ── 12. 模型工具：让 AI 自己录状态，学生不用敲命令（用户反馈的根因修复）──
 // v0.9.0：新增 teaching_prepare（备课闸门），工具数 5 → 6
-check('注册了 6 个模型工具', calls.tools.length === 6, calls.tools.map((t) => t.name).join(', '));
+check('注册了 9 个模型工具', calls.tools.length === 9, calls.tools.map((t) => t.name).join(', '));
 
 const tool = (n) => calls.tools.find((t) => t.name === n);
 check('工具名齐全', !!tool('teaching_setup') && !!tool('teaching_prepare') && !!tool('teaching_update') && !!tool('teaching_exam') && !!tool('teaching_mistake') && !!tool('teaching_note_path'));
@@ -301,11 +301,11 @@ check('未开课的会话只得到识别提示（不串台）',
 await run('/teaching on', 'cross-owner');
 const crossOther = injectFor('cross-bystander');
 check('别的会话开课不影响本会话注入',
-  crossOther.includes('当前未开启') && !crossOther.includes('三级粒度'),
+  crossOther.includes('当前未开启') && !crossOther.includes('标准回答'),
   crossOther.slice(0, 40));
 const crossOwner = injectFor('cross-owner');
 check('开课会话自己仍能拿到完整规程',
-  crossOwner.includes('三级粒度') && crossOwner.length > 1500,
+  crossOwner.includes('微点') && crossOwner.length > 1500,
   `${crossOwner.length} 字符`);
 
 // ── 15. 状态机改造（2026-10-18 v0.7.3）──
@@ -566,9 +566,10 @@ const gFile = path.join(os.tmpdir(), `teaching-gate-${process.pid}.json`);
 fs.writeFileSync(gFile, JSON.stringify({
   version: 1,
   sessions: {
-    g1: { on: true, subject: '编译原理', chapter: '第3章 词法分析' },
-    g2: { on: false, subject: '已关闭的课' },
+    g1: { on: true, subject: '编译原理', chapter: '第3章 词法分析', phase: 'teaching' },
+    g2: { on: false, subject: '已关闭的课', phase: 'teaching' },
     g3: { on: true, subject: '' },
+    g4: { on: true, subject: '编译原理', phase: 'briefing' },
   },
 }), 'utf8');
 const gGuards = [];
@@ -597,36 +598,49 @@ const stream = (sid, turn, text, kind = 'text-delta') => {
   if (text) gEmit('agent/assistant-stream', { agent: { id: sid }, frame: { type: 'chunk', attemptId, revision: 1, index: 0, time: 0, chunk: { type: kind, index: 0, text } } });
   gEmit('agent/assistant-stream', { agent: { id: sid }, frame: { type: 'end', attemptId, revision: 1, index: 0, outcome: { kind: 'committed', eventType: 'assistant/message', seq: 1 } } });
 };
+/** 模拟学生发一条新消息：v0.10 门禁按学生消息清空讲解缓存 */
+const userSay = (sid, text = '继续') => {
+  gEmit('agent/inbox/claimed', { agent: { id: sid }, message: { content: [{ type: 'text', text }] } });
+};
 const gLong = '正规式是描述词法单元的模式。它由三种基本运算构成：连接、选择、闭包。首先，符号 a 本身就是一个正规式，表示集合里只有字符串 a。其次，如果 r 与 s 都是正规式，那么 r 接 s 也是正规式，表示先把 r 匹配的串和 s 匹配的串接起来。第三，r 或 s 也是正规式，表示两者任取其一。第四，r 的星号闭包表示把 r 重复零次或多次。为什么这样定义？因为词法分析器本质上是有限自动机，而正规式恰好与有限自动机等价，所以用它来描述标识符、数字这类模式最自然。例如 (a|b)*abb 表示所有由 a、b 组成且以 abb 结尾的串。';
-stream('g1', 1, '');              // 本轮开了但一个字没写
+stream('g1', 1, '');              // 学生刚发消息，模型一个字没写
 const gDeny1 = gate(askExec('g1'));
-check('门禁：本轮没写讲解就出题，被拒绝', typeof gDeny1 === 'string' && gDeny1.includes('出题被拒绝'), String(gDeny1).slice(0, 40));
-stream('g1', 1, gLong);           // 同一轮补讲（正文足够）
+check('门禁：没写讲解就出题，被拒绝', typeof gDeny1 === 'string' && gDeny1.includes('出题被拒绝'), String(gDeny1).slice(0, 40));
+stream('g1', 1, gLong);           // 后续 assistant 消息补讲：v0.10 跨消息累计
 const gAllow1 = gate(askExec('g1'));
-check('门禁：补出讲解后放行', gAllow1 === undefined, String(gAllow1).slice(0, 40));
+check('门禁：补出讲解后放行（跨消息累计）', gAllow1 === undefined, String(gAllow1).slice(0, 40));
 const gAllow2 = gate(askExec('g1'));
-check('门禁：同一轮已放行后可连出', gAllow2 === undefined, String(gAllow2).slice(0, 40));
-stream('g1', 2, '');              // 进入新一轮
+check('门禁：同一讲次已放行后可连出', gAllow2 === undefined, String(gAllow2).slice(0, 40));
+userSay('g1', '继续');            // 学生发新消息 → 上一讲作废
 const gDeny2 = gate(askExec('g1'));
-check('门禁：新一轮没讲又出题，再次拒绝', typeof gDeny2 === 'string' && gDeny2.includes('出题被拒绝'), String(gDeny2).slice(0, 40));
+check('门禁：学生发新消息后没讲又出题，再次拒绝', typeof gDeny2 === 'string' && gDeny2.includes('出题被拒绝'), String(gDeny2).slice(0, 40));
 stream('g1', 3, '这是一段足够长的讲课正文');
 const gShort = gate(askExec('g1'));
-check('门禁：正文不足 150 字仍拒绝', typeof gShort === 'string' && gShort.includes('出题被拒绝'), String(gShort).slice(0, 40));
-// v0.9.4：字数够、但只有批改（没有「是什么 + 为什么」、没有代码块）→ 仍算没讲
+check('门禁：正文不足 300 字且无结构信号仍拒绝', typeof gShort === 'string' && gShort.includes('出题被拒绝'), String(gShort).slice(0, 40));
+// v0.10 信号制：不再强求「是什么 + 为什么」两个词（真机上 1079 字被连拒 5 次）
 const gGradingOnly = '答对了，你选 B 是对的。上一题你错在把筛选区和改写区看反了，这里再确认一次：先看 if 在 for 前面还是后面，前面的要配 else，后面的只做过滤。下一题来了，请判断下面这段代码输出什么。注意看清变量名，别把 m 和 n 混在一起，这类错误在考试里最容易丢分，务必逐字对照。另外提醒你，做完别急着交，先把两栏写在纸上再对号入座，养成习惯后考场上就不会慌，也不会因为粗心白白扣分。';
-stream('g1', 5, gGradingOnly);
-const gDenyGrading = gate(askExec('g1'));
-check('门禁：只写批改、字数够也拒绝', typeof gDenyGrading === 'string' && gDenyGrading.includes('出题被拒绝'), String(gDenyGrading).slice(0, 40));
-stream('g1', 6, gGradingOnly + ' 正规式是什么？它是描述词法单元的模式；为什么这样定义？因为词法分析器本质上是有限自动机。');
-const gAllowGrading = gate(askExec('g1'));
-check('门禁：补上「是什么 + 为什么」后放行', gAllowGrading === undefined, String(gAllowGrading).slice(0, 40));
+const gGradingLong = gGradingOnly + '以上都是批改和考试技巧，没有定义，也没有推导。'.repeat(6);
+stream('g1', 4, gGradingLong);
+const gLongOK = gate(askExec('g1'));
+check('门禁：正文够 300 字即放行（信号制，关键词不强制）', gLongOK === undefined, String(gLongOK).slice(0, 40));
+// v0.10 题干检查：代码必须在正文代码框里，不许塞进题干
+const gCardCode = gate({ name: 'ask_user_question', agent: { id: 'g1' }, arguments: { questions: [{ id: 'q1', question: '下面的代码输出什么？\nprint(1 + 1)', options: [{ label: 'A' }, { label: 'B' }] }] } });
+check('门禁：题干塞多行代码，被拒绝', typeof gCardCode === 'string' && gCardCode.includes('代码'), String(gCardCode).slice(0, 50));
+const gCardHint = gate({ name: 'ask_user_question', agent: { id: 'g1' }, arguments: { questions: [{ id: 'q1', question: '下列说法正确的是？', options: [{ label: 'A', description: '推荐选这个' }, { label: 'B' }] }] } });
+check('门禁：选项含「推荐」，被拒绝', typeof gCardHint === 'string' && gCardHint.includes('推荐'), String(gCardHint).slice(0, 50));
+userSay('g1', '继续');
 stream('g1', 4, gLong, 'reasoning-delta');
 const gThink = gate(askExec('g1'));
 check('门禁：思考过程不算讲解', typeof gThink === 'string', String(gThink).slice(0, 40));
 stream('g2', 1, '');
 check('门禁：教师模式关闭时不拦', gate(askExec('g2')) === undefined);
 stream('g3', 1, '');
-check('门禁：还没定课题（课前问询）时不拦', gate(askExec('g3')) === undefined);
+check('阶段闸门：没开课（无课题）出教学内容题，被拒绝', typeof gate(askExec('g3')) === 'string');
+const gAsk3 = gate({ name: 'ask_user_question', agent: { id: 'g3' }, arguments: { questions: [{ id: 'q1', question: '学完这门课你想达到什么目标？', options: [{ label: '应付考试' }, { label: '打基础' }] }] } });
+check('阶段闸门：开课前问询卡片放行', gAsk3 === undefined, String(gAsk3).slice(0, 40));
+stream('g4', 1, gLong);
+check('阶段闸门：备课阶段即使讲了也不许出题', typeof gate(askExec('g4')) === 'string');
+userSay('g1', '继续');
 stream('g1', 5, '');
 check('门禁：非出题工具不拦', gate(askExec('g1', 'teaching_update')) === undefined);
 // 兜底：万一 provider 或转接层不走流式增量、只在 block-end 给整块文本，
@@ -637,6 +651,7 @@ const streamBlock = (sid, turn, text) => {
   gEmit('agent/assistant-stream', { agent: { id: sid }, frame: { type: 'chunk', attemptId, revision: 1, index: 0, time: 0, chunk: { type: 'block-end', index: 0, block: { type: 'text', text } } } });
   gEmit('agent/assistant-stream', { agent: { id: sid }, frame: { type: 'end', attemptId, revision: 1, index: 0, outcome: { kind: 'committed', eventType: 'assistant/message', seq: 1 } } });
 };
+userSay('g1', '继续');
 streamBlock('g1', 6, gLong);
 const gBlock = gate(askExec('g1'));
 check('门禁：只给 block-end 整块文本也算讲了', gBlock === undefined, String(gBlock).slice(0, 40));
@@ -644,6 +659,7 @@ check('门禁：只给 block-end 整块文本也算讲了', gBlock === undefined
 // 英语课的单元卷、ABCD 选择题是模型直接写在正文里的，不经过任何工具调用，
 // examGate 拦不住；这里验证「判定 → 记账 → 下一轮强制补讲 → 只纠一次」。
 const gQuizText = '一、单项选择（每题2分）\n1. — Where is your pen? — It is in my bag.\nA. in  B. on  C. under  D. behind\n2. She ___ to school every day.\nA. go  B. goes  C. going  D. gone\n3. — ___ do you go to school? — By bike.\nA. What  B. How  C. When  D. Where\n4. There ___ some milk in the glass.\nA. are  B. is  C. be  D. have\n5. Look! The boys ___ football now.\nA. play  B. plays  C. are playing  D. played\n6. He is good ___ English.\nA. at  B. in  C. on  D. for\n把答案写在下面。';
+userSay('g1', '继续');            // 学生发新消息，清掉上一段讲解
 stream('g1', 7, gQuizText);
 const gAfterQuiz = JSON.parse(fs.readFileSync(gFile, 'utf8'));
 const gDump = gAfterQuiz.sessions && gAfterQuiz.sessions.g1 && gAfterQuiz.sessions.g1.quizDump;
@@ -684,8 +700,10 @@ check('[接力] suggestDataDir 在 projects 下找到已存在的同名课目录
 
 // A 会话：正常开课、备课确认、记进度
 const relayA = 'relay-a';
-await relaySetup.execute({ subject: 'Python', material: '吴保俊《Python自学》' }, { agent: { id: relayA }, header: { cwd: relayRoot } });
+await relaySetup.execute({ subject: 'Python', material: '吴保俊《Python自学》', material_mode: 'textbook' }, { agent: { id: relayA }, header: { cwd: relayRoot } });
 await rTool('teaching_prepare').execute({ confirmed: true, note: '教材齐、真题2套、路线已定' }, { agent: { id: relayA } });
+fs.mkdirSync(relayProj, { recursive: true });
+fs.writeFileSync(path.join(relayProj, '7.1 列表基础-复习资料.md'), '# 7.1 复习资料\n', 'utf8');
 await rTool('teaching_update').execute({ progress: '第7章 列表与元组', finished_section: '7.1 列表基础' }, { agent: { id: relayA } });
 await rRun('/teaching on', relayA);
 

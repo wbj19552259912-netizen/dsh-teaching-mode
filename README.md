@@ -141,12 +141,17 @@ Progress can be recorded at three granularities: **section** (小节), **topic/s
 
 | Tool | Purpose |
 |---|---|
-| `teaching_setup` | Record subject and material; derives the notes directory and re-arms the prep gate when the subject changes |
-| `teaching_prepare` | **Prep gate** (v0.9.0): pass `confirmed: true` once contents / past papers / chapter route / exam info are settled |
-| `teaching_update` | Record progress, sections, chapters, debts; `debt_resolved` / `debt_dropped` close or void a debt |
+| `teaching_toggle` | Turn the mode on/off; only this tool's `on=true` counts as "really enabled" |
+| `teaching_setup` | Record subject, material mode (`textbook` / `outline`) and requirements; derives the notes directory |
+| `teaching_prepare` | Prep gate: requires subject / material mode / material / requirements before moving to the syllabus stage |
+| `teaching_syllabus` | Submit the syllabus: validates levels (≥2) and micro-point count (≥6), writes `教学大纲.md`; after student confirmation produces receipt `TM-xxxx` |
+| `teaching_start` | Start teaching with the receipt; before this step content-question cards are blocked |
+| `teaching_update` | Record progress, sections, chapters, debts; `finished_section` requires that section's review file (`force` skips) |
 | `teaching_exam` | Record exam date, question types, scope, past papers |
 | `teaching_mistake` | Record a mistake including *which layer* was wrong; appended to `错题本.md` |
-| `teaching_note_path` | Show the notes directory |
+| `teaching_note_path` | Show the notes directory (created automatically if missing) |
+
+**Start flow (v0.10 state machine)**: `teaching_toggle(on)` → `teaching_setup` → `teaching_prepare` → `teaching_syllabus` (student confirms) → `teaching_start(TM-xxxx)`. The injected status header always states the current phase and the next tool to call.
 
 ## Config
 

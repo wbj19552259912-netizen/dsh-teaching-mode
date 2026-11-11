@@ -169,12 +169,17 @@ git clone https://github.com/wbj19552259912-netizen/dsh-teaching-mode.git
 
 | 工具 | 作用 |
 |---|---|
-| `teaching_setup` | 记课题与教材，自动算出资料落盘目录；换了课题会重新关上备课闸门 |
-| `teaching_prepare` | **备课闸门**（v0.9.0）：教材目录/缺页、真题试卷、章节路线、考试信息四项落实后传 `confirmed: true`，之后才允许讲解 |
-| `teaching_update` | 记进度 / 小节 / 章 / 欠账；`debt_resolved` 销账、`debt_dropped` 作废 |
+| `teaching_toggle` | 开 / 关教师模式（开课只认这个工具落下的 `on=true`，不再信模型嘴上说「已开启」） |
+| `teaching_setup` | 记课题、教材形态（`textbook` 有成体系教材 / `outline` 只有素材）、学生要求；自动算出资料落盘目录 |
+| `teaching_prepare` | 备课闸门：课题 / 教材形态 / 材料 / 要求都落实才放行，进入「写大纲」阶段 |
+| `teaching_syllabus` | 提交教学大纲：校验分级（≥2 种层级）与微点数（≥6），落盘 `教学大纲.md`；学生确认后生成回执码 `TM-xxxx` |
+| `teaching_start` | 用回执码正式开课；没走完这一步，状态头会拦住出教学内容题 |
+| `teaching_update` | 记进度 / 小节 / 章 / 欠账；`finished_section` 要求该节「-复习资料.md」已落盘（`force` 可跳过） |
 | `teaching_exam` | 记考试日期、题型分值、范围、真题 |
 | `teaching_mistake` | 记错题（含"错在哪一层"），明细自动追加到资料目录的 `错题本.md` |
-| `teaching_note_path` | 查资料落盘目录 |
+| `teaching_note_path` | 查资料落盘目录（目录不存在会自动创建） |
+
+**开课流程（v0.10 状态机）**：`teaching_toggle(on)` → `teaching_setup` → `teaching_prepare` → `teaching_syllabus`（学生确认）→ `teaching_start(TM-xxxx)`。状态头每轮都会写明「当前阶段 + 下一步该调哪个工具」，跳步会被挡住。
 
 ### v0.9.0 的两处行为变化
 
