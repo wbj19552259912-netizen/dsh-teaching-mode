@@ -628,6 +628,10 @@ const gCardCode = gate({ name: 'ask_user_question', agent: { id: 'g1' }, argumen
 check('门禁：题干塞多行代码，被拒绝', typeof gCardCode === 'string' && gCardCode.includes('代码'), String(gCardCode).slice(0, 50));
 const gCardHint = gate({ name: 'ask_user_question', agent: { id: 'g1' }, arguments: { questions: [{ id: 'q1', question: '下列说法正确的是？', options: [{ label: 'A', description: '推荐选这个' }, { label: 'B' }] }] } });
 check('门禁：选项含「推荐」，被拒绝', typeof gCardHint === 'string' && gCardHint.includes('推荐'), String(gCardHint).slice(0, 50));
+// 2026-11-12 实测：门禁把「插件开发对话」里的普通问询卡也拦了（选项带「推荐」二字）。
+// 只有像选择题的卡片才查暗示；2 选项、题干不是典型题干措辞的管理卡应放行。
+const gManage = gate({ name: 'ask_user_question', agent: { id: 'g1' }, arguments: { questions: [{ id: 'q1', question: '判定强度怎么定？', options: [{ label: '先观察（推荐）' }, { label: '直接收紧' }] }] } });
+check('门禁：管理类问询卡不被选项暗示误伤', gManage === undefined || !String(gManage).includes('推荐'), String(gManage).slice(0, 50));
 userSay('g1', '继续');
 stream('g1', 4, gLong, 'reasoning-delta');
 const gThink = gate(askExec('g1'));
