@@ -575,7 +575,7 @@ fs.writeFileSync(gFile, JSON.stringify({
 const gGuards = [];
 const gSections = [];
 const gListeners = new Map();
-const gEmit = (evt, payload) => { for (const fn of (gListeners.get(evt) || [])) { try { fn(payload); } catch { /* 忽略 */ } } };
+const gEmit = (evt, ...args) => { for (const fn of (gListeners.get(evt) || [])) { try { fn(...args); } catch { /* 忽略 */ } } };
 const gCtx = {
   logger: { info: () => {}, warn: () => {}, error: () => {} },
   effect: (fn) => { try { fn(); } catch { /* 忽略 */ } return () => {}; },
@@ -655,6 +655,18 @@ userSay('g1', '继续');
 streamBlock('g1', 6, gLong);
 const gBlock = gate(askExec('g1'));
 check('门禁：只给 block-end 整块文本也算讲了', gBlock === undefined, String(gBlock).slice(0, 40));
+// 2026-11-12 真机事故：学生用卡片（ask_user_question）作答，答案走 tools/result 回来，
+// 不产生学生消息，clearLesson 不会执行；旧 buf 与 gatePassed 都还在，模型不写新讲解就能直接出下一题。
+const answerCard = (sid) => gEmit('tools/result', { name: 'ask_user_question', agent: { id: sid } }, { content: [{ type: 'text', text: '{"answers":[]}' }] });
+userSay('g1', '继续');
+stream('g1', 8, gLong);
+check('门禁：答题场景铺垫——正常讲解后放行', gate(askExec('g1')) === undefined);
+answerCard('g1');                 // 学生在卡片上作答，没有新的 inbox 消息
+const gDenyAnswered = gate(askExec('g1'));
+check('门禁：学生答题后没写新讲解就出下一题，被拒绝', typeof gDenyAnswered === 'string' && gDenyAnswered.includes('已经作答'), String(gDenyAnswered).slice(0, 60));
+stream('g1', 8, gLong.slice(0, 200));   // 同一讲次内补 200 字新讲解
+const gAllowAnswered = gate(askExec('g1'));
+check('门禁：答题后补足新讲解再出题，放行', gAllowAnswered === undefined, String(gAllowAnswered).slice(0, 40));
 // ── 18b. 纯文本出题的事后纠偏（v0.9.6）──
 // 英语课的单元卷、ABCD 选择题是模型直接写在正文里的，不经过任何工具调用，
 // examGate 拦不住；这里验证「判定 → 记账 → 下一轮强制补讲 → 只纠一次」。

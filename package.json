@@ -1,6 +1,6 @@
 {
   "name": "dsh-teaching-mode",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "type": "module",
   "description": "AI 讲课时最大的毛病是「一口气倒完一章，从不考你」——看完感觉懂了，考完什么都不会。教师模式把它改成闭环：一次只讲一小节，讲完立刻出题，错题按概念/推理/记法/计算分层记账，关掉对话重开进度还在。/teaching on 开启，默认关，不干扰日常对话。 A quiz-first teaching loop for DeepSeek Harness.",
   "main": "lib/index.js",
